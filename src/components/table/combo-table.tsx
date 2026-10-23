@@ -3,6 +3,7 @@ import {
   useSignal,
   useComputed$,
   useStore,
+  type Signal,
 } from '@builder.io/qwik';
 import Pagination from './pagination';
 import Button from '../inputs/button';
@@ -15,6 +16,8 @@ interface Props {
   pagination?: boolean;
   coloredBands?: boolean;
   noSearch?: boolean;
+  open?: boolean;
+  lowband4RxFilter?: Signal<boolean>;
 }
 
 export default component$((props: Props) => {
@@ -23,7 +26,7 @@ export default component$((props: Props) => {
       col.every((cell) => cell === '' || cell === undefined),
     );
   };
-  const { title, headers, data, hideEmpty, noSpoiler, pagination, noSearch } =
+  const { title, headers, data, hideEmpty, noSpoiler, pagination, noSearch, open } =
     props;
   const emptyColumns = hideEmpty ? getEmptyColumns() : [];
 
@@ -89,6 +92,21 @@ export default component$((props: Props) => {
               label={monoChrome.value ? 'Colored bands' : 'Monochrome bands'}
               onClick$={async () => {
                 monoChrome.value = !monoChrome.value;
+              }}
+            />
+          </div>
+        )}
+        {props.lowband4RxFilter && (
+          <div class="min-w-full px-2 lg:min-w-52">
+            <Button
+              type="button"
+              label={
+                props.lowband4RxFilter.value
+                  ? 'Lowband 4Rx only ON'
+                  : 'Lowband 4Rx only OFF'
+              }
+              onClick$={async () => {
+                props.lowband4RxFilter!.value = !props.lowband4RxFilter!.value;
               }}
             />
           </div>
@@ -170,7 +188,7 @@ export default component$((props: Props) => {
     return table;
   } else {
     return (
-      <details open={false}>
+      <details open={open ?? false}>
         <summary class="mt-10 text-xl font-bold">{title}</summary>
         {table}
       </details>

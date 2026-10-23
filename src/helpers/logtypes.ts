@@ -90,7 +90,7 @@ const LogTypeOptions: LogTypeOptions[] = [
   },
   {
     value: 'MNR',
-    label: 'Mediatek NR Trace Log (text)',
+    label: 'Mediatek NR Trace Log',
     type: 'text',
   },
   { value: 'SHLTE', label: 'Shannon LTE UE cap config', type: 'binary' },
@@ -158,7 +158,7 @@ export function getLogTypeHelpFile(value: string) {
     case 'M':
       return 'Attach files containing CA_COMB_INFO logs as text';
     case 'MNR':
-      return 'Attach a file containing MediaTek NR trace messages as text';
+      return 'Attach a file containing MediaTek NR trace messages';
     case 'H':
       return 'Attach a file containing the UE Capability Information or UE EUTRA Capability hexdump';
     case 'RF':

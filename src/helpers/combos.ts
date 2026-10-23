@@ -98,7 +98,7 @@ function multipleFeaturesToStr(
   return result;
 }
 
-function lteBwClassCCs(bwClass: string) {
+export function lteBwClassCCs(bwClass: string) {
   switch (bwClass) {
     case 'A':
       return 1;
@@ -117,7 +117,7 @@ function lteBwClassCCs(bwClass: string) {
   }
 }
 
-function nrFr1BwClassCCs(bwClass: string) {
+export function nrFr1BwClassCCs(bwClass: string) {
   switch (bwClass) {
     case 'A':
       return 1;
@@ -147,7 +147,7 @@ function nrFr1BwClassCCs(bwClass: string) {
   }
 }
 
-function nrFr2BwClassCCs(bwClass: string) {
+export function nrFr2BwClassCCs(bwClass: string) {
   switch (bwClass) {
     case 'A':
       return 1;
@@ -244,7 +244,7 @@ function mimoToFeature(
   return result;
 }
 
-function bwClassCCs(band: number, bwClass: string, nr: boolean) {
+export function bwClassCCs(band: number, bwClass: string, nr: boolean) {
   let multiplier: number;
   if (!nr) {
     multiplier = lteBwClassCCs(bwClass);

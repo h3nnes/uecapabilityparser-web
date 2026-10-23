@@ -1,4 +1,4 @@
-import { component$ } from '@builder.io/qwik';
+import { component$, useSignal, useComputed$ } from '@builder.io/qwik';
 import type { ComboEnDc } from '~/@types/uecapabilityparser';
 
 import {
@@ -14,18 +14,28 @@ import {
   componentsScsUlToStr,
   bcsToStr,
 } from '~/helpers/combos';
+import { filterEndcByLowband4Rx } from '~/helpers/lowband-mimo-filter';
 import ComboTable from '~/components/table/combo-table';
 interface Props {
   combos?: ComboEnDc[];
   title?: string;
+  open?: boolean;
 }
 
 export default component$((props: Props) => {
-  const { combos, title } = props;
+  const { combos, title, open } = props;
 
   if (combos === undefined || combos.length == 0) {
     return <></>;
   }
+
+  // Low-band 4Rx MIMO filter state
+  const lowband4RxFilterEnabled = useSignal(false);
+
+  // Apply filter to combos
+  const filteredCombos = useComputed$(() => {
+    return filterEndcByLowband4Rx(combos, lowband4RxFilterEnabled.value);
+  });
 
   const headers = [
     'LTE DL',
@@ -54,7 +64,7 @@ export default component$((props: Props) => {
     data.push([]);
   }
 
-  combos.forEach(
+  filteredCombos.value.forEach(
     ({ componentsLte, componentsNr, bcsEutra, bcsNr, bcsIntraEndc }) => {
       let i = 0;
       data[i++].push(componentsDlToStr(componentsLte));
@@ -79,14 +89,28 @@ export default component$((props: Props) => {
     },
   );
 
+  // Show filter count if filter is active
+  const showFilterCount = lowband4RxFilterEnabled.value;
+  const filterCountText = showFilterCount
+    ? ` (Showing ${filteredCombos.value.length} of ${combos.length} combos)`
+    : '';
+
   return (
-    <ComboTable
-      title={title}
-      hideEmpty={true}
-      headers={headers}
-      data={data}
-      pagination={combos && combos.length > 25}
-      coloredBands={true}
-    />
+    <details open={open ?? false}>
+      <summary class="mt-10 text-xl font-bold">
+        {title}
+        {filterCountText}
+      </summary>
+      <ComboTable
+        title={undefined}
+        hideEmpty={true}
+        headers={headers}
+        data={data}
+        pagination={filteredCombos.value && filteredCombos.value.length > 25}
+        coloredBands={true}
+        noSpoiler={true}
+        lowband4RxFilter={lowband4RxFilterEnabled}
+      />
+    </details>
   );
 });

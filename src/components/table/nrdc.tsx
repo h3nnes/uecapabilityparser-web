@@ -18,10 +18,11 @@ import ComboTable from '~/components/table/combo-table';
 interface Props {
   combos?: ComboNrDc[];
   title?: string;
+  open?: boolean;
 }
 
 export default component$((props: Props) => {
-  const { combos, title } = props;
+  const { combos, title, open } = props;
 
   if (combos === undefined || combos.length == 0) {
     return <></>;
@@ -85,6 +86,7 @@ export default component$((props: Props) => {
       data={data}
       pagination={combos && combos.length > 25}
       coloredBands={true}
+      open={open}
     />
   );
 });

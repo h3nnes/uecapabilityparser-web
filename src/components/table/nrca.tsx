@@ -1,4 +1,4 @@
-import { component$ } from '@builder.io/qwik';
+import { component$, useSignal, useComputed$ } from '@builder.io/qwik';
 import type { ComboNr } from '~/@types/uecapabilityparser';
 
 import {
@@ -15,18 +15,40 @@ import {
   bcsToStr,
   ulTxSwitchToStr,
 } from '~/helpers/combos';
+import {
+  parseBandwidthFilter,
+  filterCombosByBandwidth,
+} from '~/helpers/bandwidth-filter';
+import { filterNrcaByLowband4Rx } from '~/helpers/lowband-mimo-filter';
 import ComboTable from '~/components/table/combo-table';
+import NrBandwidthFilter from '~/components/filters/NrBandwidthFilter';
+
 interface Props {
   combos?: ComboNr[];
   title?: string;
+  open?: boolean;
 }
 
 export default component$((props: Props) => {
-  const { combos, title } = props;
+  const { combos, title, open } = props;
 
   if (combos === undefined || combos.length == 0) {
     return <></>;
   }
+
+  // Bandwidth filter state - shared with filter component
+  const bandwidthFilterText = useSignal('');
+
+  // Low-band 4Rx MIMO filter state
+  const lowband4RxFilterEnabled = useSignal(false);
+
+  // Apply filters to combos (both bandwidth and lowband 4Rx filters)
+  const filteredCombos = useComputed$(() => {
+    const criteria = parseBandwidthFilter(bandwidthFilterText.value);
+    let result = filterCombosByBandwidth(combos, criteria);
+    result = filterNrcaByLowband4Rx(result, lowband4RxFilterEnabled.value);
+    return result;
+  });
 
   const headers = [
     'NR DL',
@@ -53,7 +75,7 @@ export default component$((props: Props) => {
     data.push([]);
   }
 
-  combos.forEach(({ components, bcs, uplinkTxSwitch }) => {
+  filteredCombos.value.forEach(({ components, bcs, uplinkTxSwitch }) => {
     let i = 0;
     data[i++].push(componentsDlToStr(components, true));
     data[i++].push(componentsMimoDlToStr(components, true));
@@ -69,14 +91,30 @@ export default component$((props: Props) => {
     data[i++].push(bcsToStr(bcs));
   });
 
+  // Show filter count if any filter is active
+  const showFilterCount =
+    bandwidthFilterText.value.trim() !== '' || lowband4RxFilterEnabled.value;
+  const filterCountText = showFilterCount
+    ? ` (Showing ${filteredCombos.value.length} of ${combos.length} combos)`
+    : '';
+
   return (
-    <ComboTable
-      title={title}
-      hideEmpty={true}
-      headers={headers}
-      data={data}
-      pagination={combos && combos.length > 25}
-      coloredBands={true}
-    />
+    <details open={open ?? false}>
+      <summary class="mt-10 text-xl font-bold">
+        {title}
+        {filterCountText}
+      </summary>
+      <NrBandwidthFilter filterValue={bandwidthFilterText} />
+      <ComboTable
+        title={undefined}
+        hideEmpty={true}
+        headers={headers}
+        data={data}
+        pagination={filteredCombos.value && filteredCombos.value.length > 25}
+        coloredBands={true}
+        noSpoiler={true}
+        lowband4RxFilter={lowband4RxFilterEnabled}
+      />
+    </details>
   );
 });

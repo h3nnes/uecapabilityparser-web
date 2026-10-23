@@ -395,6 +395,7 @@ export interface IndexLine {
   compressed?: boolean;
   defaultNR?: boolean;
   parserVersion: string;
+  logType?: string;
   metadata?: { [key: string]: string } | null;
 }
 
@@ -404,6 +405,8 @@ export interface MultiIndexLine {
   description: string;
   indexLineIds: string[];
   compressed?: boolean;
+  logType?: string;
+  logTypes?: string[];
 }
 
 export interface MultiCapabilities {

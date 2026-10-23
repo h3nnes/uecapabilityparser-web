@@ -18,10 +18,11 @@ interface Props {
   noPagination?: boolean;
   coloredBands?: boolean;
   noSearch?: boolean;
+  open?: boolean;
 }
 
 export default component$((props: Props) => {
-  const { combos, title, noSpoiler, noPagination, coloredBands, noSearch } =
+  const { combos, title, noSpoiler, noPagination, coloredBands, noSearch, open } =
     props;
 
   if (combos === undefined || combos.length == 0) {
@@ -64,6 +65,7 @@ export default component$((props: Props) => {
       pagination={!noPagination && combos && combos.length > 25}
       coloredBands={coloredBands}
       noSearch={noSearch}
+      open={open}
     />
   );
 });

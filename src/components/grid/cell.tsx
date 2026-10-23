@@ -8,17 +8,20 @@ import {
 } from '@builder.io/qwik';
 import { type IconProps } from 'qwik-feather-icons';
 import { Link } from '@builder.io/qwik-city';
+import { logTypeToString } from '~/helpers/metadata';
 
 interface Props {
   label?: string;
   multilineLabel?: string;
+  logType?: string;
+  logTypes?: string[];
   url?: string;
   Icon?: Component<IconProps>;
   inverted?: boolean;
 }
 
 export default component$((props: Props) => {
-  const { label, multilineLabel, url, Icon, inverted } = props;
+  const { label, multilineLabel, logType, logTypes, url, Icon, inverted } = props;
   const invertedClass = inverted
     ? ' border-2 border-solid border-black bg-white text-black'
     : ' bg-black text-white';
@@ -67,21 +70,32 @@ export default component$((props: Props) => {
   );
 
   return (
-    <Link
-      class={
-        'multiellipsis my-2 flex h-[150px] w-full overflow-hidden p-2 text-center text-lg focus:outline-none focus:ring focus:ring-gray-400' +
-        invertedClass
-      }
-      ref={outputRef}
-      href={url}
-      prefetch={false}
-    >
-      <div class={'m-auto break-words'}>
-        <span>{multilineLabel}</span>
-        {multilineLabel && label && <br />}
-        <span>{label}</span>
-        {Icon !== undefined && <Icon class={'m-auto'} />}
+    <>
+      <div class="relative">
+        <Link
+          class={
+            'multiellipsis my-2 flex h-[150px] w-full overflow-hidden p-2 text-center text-lg focus:outline-none focus:ring focus:ring-gray-400' +
+            invertedClass
+          }
+          ref={outputRef}
+          href={url}
+          prefetch={false}
+        >
+          <div class={'m-auto break-words'}>
+            <span>{multilineLabel}</span>
+            {multilineLabel && label && <br />}
+            <span>{label}</span>
+            {logType && <br />}
+            {logType && (
+              <span class="text-sm text-gray-400">
+                {logTypeToString(logType)}
+                {logTypes && logTypes.length > 1 && ` +${logTypes.length - 1}`}
+              </span>
+            )}
+            {Icon !== undefined && <Icon class={'m-auto'} />}
+          </div>
+        </Link>
       </div>
-    </Link>
+    </>
   );
 });

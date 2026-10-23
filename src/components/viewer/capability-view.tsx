@@ -13,6 +13,7 @@ import MetadataTable from '../table/metadata-table';
 import { Endpoints } from '~/helpers/endpoints';
 import { AlertException } from '~/helpers/alert';
 import Ratcapabilities from '../table/ratcapabilities';
+import ComboSearchSection from './combo-search-section';
 
 interface Props {
   capabilities: Capabilities;
@@ -111,6 +112,11 @@ export default component$(({ capabilities, inputs }: Props) => {
         <div class="mx-auto w-full max-w-7xl overflow-x-auto">
           <div class="w-full text-sm sm:w-fit sm:min-w-[32rem] sm:max-w-full md:min-w-[36rem]">
             <MetadataTable cap={capabilities ?? undefined} title="Metadata" />
+          </div>
+        </div>
+        <div class="mx-auto w-full max-w-7xl overflow-x-auto">
+          <div class="w-full text-sm sm:w-fit sm:min-w-[32rem] sm:max-w-full md:min-w-[36rem]">
+            <ComboSearchSection capabilities={capabilities} />
           </div>
         </div>
         <div class="mx-auto w-full max-w-7xl overflow-x-auto">
