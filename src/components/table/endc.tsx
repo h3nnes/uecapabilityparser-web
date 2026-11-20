@@ -14,7 +14,10 @@ import {
   componentsScsUlToStr,
   bcsToStr,
 } from '~/helpers/combos';
-import { filterEndcByLowband4Rx } from '~/helpers/lowband-mimo-filter';
+import {
+  filterEndcByLowband4Rx,
+  type Lowband4RxFilterMode,
+} from '~/helpers/lowband-mimo-filter';
 import ComboTable from '~/components/table/combo-table';
 interface Props {
   combos?: ComboEnDc[];
@@ -30,11 +33,11 @@ export default component$((props: Props) => {
   }
 
   // Low-band 4Rx MIMO filter state
-  const lowband4RxFilterEnabled = useSignal(false);
+  const lowband4RxFilterMode = useSignal<Lowband4RxFilterMode>('off');
 
   // Apply filter to combos
   const filteredCombos = useComputed$(() => {
-    return filterEndcByLowband4Rx(combos, lowband4RxFilterEnabled.value);
+    return filterEndcByLowband4Rx(combos, lowband4RxFilterMode.value);
   });
 
   const headers = [
@@ -90,7 +93,7 @@ export default component$((props: Props) => {
   );
 
   // Show filter count if filter is active
-  const showFilterCount = lowband4RxFilterEnabled.value;
+  const showFilterCount = lowband4RxFilterMode.value !== 'off';
   const filterCountText = showFilterCount
     ? ` (Showing ${filteredCombos.value.length} of ${combos.length} combos)`
     : '';
@@ -109,7 +112,7 @@ export default component$((props: Props) => {
         pagination={filteredCombos.value && filteredCombos.value.length > 25}
         coloredBands={true}
         noSpoiler={true}
-        lowband4RxFilter={lowband4RxFilterEnabled}
+        lowband4RxFilter={lowband4RxFilterMode}
       />
     </details>
   );

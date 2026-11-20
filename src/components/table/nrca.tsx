@@ -19,7 +19,10 @@ import {
   parseBandwidthFilter,
   filterCombosByBandwidth,
 } from '~/helpers/bandwidth-filter';
-import { filterNrcaByLowband4Rx } from '~/helpers/lowband-mimo-filter';
+import {
+  filterNrcaByLowband4Rx,
+  type Lowband4RxFilterMode,
+} from '~/helpers/lowband-mimo-filter';
 import ComboTable from '~/components/table/combo-table';
 import NrBandwidthFilter from '~/components/filters/NrBandwidthFilter';
 
@@ -40,13 +43,13 @@ export default component$((props: Props) => {
   const bandwidthFilterText = useSignal('');
 
   // Low-band 4Rx MIMO filter state
-  const lowband4RxFilterEnabled = useSignal(false);
+  const lowband4RxFilterMode = useSignal<Lowband4RxFilterMode>('off');
 
   // Apply filters to combos (both bandwidth and lowband 4Rx filters)
   const filteredCombos = useComputed$(() => {
     const criteria = parseBandwidthFilter(bandwidthFilterText.value);
     let result = filterCombosByBandwidth(combos, criteria);
-    result = filterNrcaByLowband4Rx(result, lowband4RxFilterEnabled.value);
+    result = filterNrcaByLowband4Rx(result, lowband4RxFilterMode.value);
     return result;
   });
 
@@ -93,7 +96,8 @@ export default component$((props: Props) => {
 
   // Show filter count if any filter is active
   const showFilterCount =
-    bandwidthFilterText.value.trim() !== '' || lowband4RxFilterEnabled.value;
+    bandwidthFilterText.value.trim() !== '' ||
+    lowband4RxFilterMode.value !== 'off';
   const filterCountText = showFilterCount
     ? ` (Showing ${filteredCombos.value.length} of ${combos.length} combos)`
     : '';
@@ -113,7 +117,7 @@ export default component$((props: Props) => {
         pagination={filteredCombos.value && filteredCombos.value.length > 25}
         coloredBands={true}
         noSpoiler={true}
-        lowband4RxFilter={lowband4RxFilterEnabled}
+        lowband4RxFilter={lowband4RxFilterMode}
       />
     </details>
   );

@@ -7,6 +7,11 @@ import {
 } from '@builder.io/qwik';
 import Pagination from './pagination';
 import Button from '../inputs/button';
+import {
+  lowband4RxFilterLabel,
+  nextLowband4RxMode,
+  type Lowband4RxFilterMode,
+} from '~/helpers/lowband-mimo-filter';
 interface Props {
   title?: string;
   headers: string[];
@@ -17,7 +22,7 @@ interface Props {
   coloredBands?: boolean;
   noSearch?: boolean;
   open?: boolean;
-  lowband4RxFilter?: Signal<boolean>;
+  lowband4RxFilter?: Signal<Lowband4RxFilterMode>;
 }
 
 export default component$((props: Props) => {
@@ -26,8 +31,16 @@ export default component$((props: Props) => {
       col.every((cell) => cell === '' || cell === undefined),
     );
   };
-  const { title, headers, data, hideEmpty, noSpoiler, pagination, noSearch, open } =
-    props;
+  const {
+    title,
+    headers,
+    data,
+    hideEmpty,
+    noSpoiler,
+    pagination,
+    noSearch,
+    open,
+  } = props;
   const emptyColumns = hideEmpty ? getEmptyColumns() : [];
 
   const columnsIds = [...data.keys()];
@@ -100,13 +113,11 @@ export default component$((props: Props) => {
           <div class="min-w-full px-2 lg:min-w-52">
             <Button
               type="button"
-              label={
-                props.lowband4RxFilter.value
-                  ? 'Lowband 4Rx only ON'
-                  : 'Lowband 4Rx only OFF'
-              }
+              label={lowband4RxFilterLabel(props.lowband4RxFilter.value)}
               onClick$={async () => {
-                props.lowband4RxFilter!.value = !props.lowband4RxFilter!.value;
+                props.lowband4RxFilter!.value = nextLowband4RxMode(
+                  props.lowband4RxFilter!.value,
+                );
               }}
             />
           </div>

@@ -21,6 +21,41 @@ export const NR_LOWBANDS = new Set([
 ]);
 
 /**
+ * State of the low-band 4Rx MIMO filter:
+ * - 'off': show every combo
+ * - 'any': show the combos with at least one low-band component that supports 4Rx
+ * - 'all': show the combos where every low-band component supports 4Rx
+ *   (e.g. low-band + low-band 4x4 + 4x4)
+ */
+export type Lowband4RxFilterMode = 'off' | 'any' | 'all';
+
+/** Return the next state of the filter, in the order used by its button. */
+export function nextLowband4RxMode(
+  mode: Lowband4RxFilterMode,
+): Lowband4RxFilterMode {
+  switch (mode) {
+    case 'off':
+      return 'any';
+    case 'any':
+      return 'all';
+    case 'all':
+      return 'off';
+  }
+}
+
+/** Return the label of the filter button for the given state. */
+export function lowband4RxFilterLabel(mode: Lowband4RxFilterMode): string {
+  switch (mode) {
+    case 'any':
+      return 'Lowband 4Rx only ON';
+    case 'all':
+      return 'All lowbands 4x4';
+    case 'off':
+      return 'Lowband 4Rx only OFF';
+  }
+}
+
+/**
  * Extract the maximum MIMO value from a Mimo type
  * Returns 0 for empty or undefined MIMO
  */
@@ -83,27 +118,79 @@ export function hasNrcaLowband4Rx(combo: ComboNr): boolean {
 }
 
 /**
- * Filter EN-DC combos to only include those with at least one low-band 4Rx MIMO
+ * Check if every low-band component of an EN-DC combo has 4Rx MIMO DL.
+ *
+ * Only the components that have a DL configuration are considered: UL-only
+ * components (e.g. SUL) don't carry a 4Rx DL capability. A combo without
+ * low-band DL components doesn't match.
  */
-export function filterEndcByLowband4Rx(
-  combos: ComboEnDc[],
-  enabled: boolean,
-): ComboEnDc[] {
-  if (!enabled) {
-    return combos;
-  }
-  return combos.filter(hasEndcLowband4Rx);
+export function hasEndcAllLowbands4Rx(combo: ComboEnDc): boolean {
+  const lteLowbands = combo.componentsLte.filter(
+    (component) =>
+      component.bwClassDl !== undefined && LTE_LOWBANDS.has(component.band),
+  );
+  const nrLowbands = combo.componentsNr.filter(
+    (component) =>
+      component.bwClassDl !== undefined && NR_LOWBANDS.has(component.band),
+  );
+  return (
+    lteLowbands.length + nrLowbands.length > 0 &&
+    lteLowbands.every(isLteLowband4Rx) &&
+    nrLowbands.every(isNrLowband4Rx)
+  );
 }
 
 /**
- * Filter NR-CA combos to only include those with at least one NR low-band 4Rx MIMO
+ * Check if every low-band component of an NR-CA combo has 4Rx MIMO DL.
+ *
+ * Only the components that have a DL configuration are considered: UL-only
+ * components (e.g. SUL) don't carry a 4Rx DL capability. A combo without
+ * low-band DL components doesn't match.
+ */
+export function hasNrcaAllLowbands4Rx(combo: ComboNr): boolean {
+  const lowbands = combo.components.filter(
+    (component) =>
+      component.bwClassDl !== undefined && NR_LOWBANDS.has(component.band),
+  );
+  return lowbands.length > 0 && lowbands.every(isNrLowband4Rx);
+}
+
+/**
+ * Filter EN-DC combos by low-band 4Rx MIMO.
+ *
+ * 'any' keeps the combos with at least one low-band 4Rx component, 'all' keeps
+ * only the combos where every low-band component is 4Rx.
+ */
+export function filterEndcByLowband4Rx(
+  combos: ComboEnDc[],
+  mode: Lowband4RxFilterMode,
+): ComboEnDc[] {
+  switch (mode) {
+    case 'any':
+      return combos.filter(hasEndcLowband4Rx);
+    case 'all':
+      return combos.filter(hasEndcAllLowbands4Rx);
+    case 'off':
+      return combos;
+  }
+}
+
+/**
+ * Filter NR-CA combos by low-band 4Rx MIMO.
+ *
+ * 'any' keeps the combos with at least one low-band 4Rx component, 'all' keeps
+ * only the combos where every low-band component is 4Rx.
  */
 export function filterNrcaByLowband4Rx(
   combos: ComboNr[],
-  enabled: boolean,
+  mode: Lowband4RxFilterMode,
 ): ComboNr[] {
-  if (!enabled) {
-    return combos;
+  switch (mode) {
+    case 'any':
+      return combos.filter(hasNrcaLowband4Rx);
+    case 'all':
+      return combos.filter(hasNrcaAllLowbands4Rx);
+    case 'off':
+      return combos;
   }
-  return combos.filter(hasNrcaLowband4Rx);
 }
